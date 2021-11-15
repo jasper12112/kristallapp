@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View} from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import AppStack from './AppStack';
 import LoginProvider from './utils/LoginProvider';
 
@@ -14,8 +14,8 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container:{
+  container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#111119',
   }
 })
