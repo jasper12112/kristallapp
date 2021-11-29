@@ -1,28 +1,22 @@
 import { FirebaseAuthTypes } from '@react-native-firebase/auth';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 import auth from '@react-native-firebase/auth'
 
-import firestore, { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import firestore from '@react-native-firebase/firestore';
 
-interface ContextType {
-    user: Object | null;
-    isLoading: boolean;
-}
-
-export const LoginContext = React.createContext({} as ContextType);
+import SingleStateProvider from './SingleStateProvider';
 
 interface Props {
     children: React.ReactNode;
 }
 
 export default function LoginProvider(props: Props) {
-    const [user, setUser] = useState<Object | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const StateProvider = SingleStateProvider.getInstance();
 
     const onAuthStateChanged = (auth_user: FirebaseAuthTypes.User | null) => {
-        setIsLoading(false);
-        auth_user != null ? getUserByID(auth_user) : setUser(null);
+        StateProvider.storeKeyValue('isLoading', false);
+        auth_user != null ? getUserByID(auth_user) : StateProvider.storeKeyValue('user', null);
     }
 
     async function getUserByID(user: FirebaseAuthTypes.User | null) {
@@ -39,18 +33,18 @@ export default function LoginProvider(props: Props) {
                 uid: data.uid,
                 username: data.username
             }
-            setUser(UserData)
+            StateProvider.storeKeyValue('user', UserData);
         }
     }
 
     useEffect(() => {
-        const subscribe = auth().onAuthStateChanged(onAuthStateChanged);
-        return subscribe;
+        const sub = auth().onAuthStateChanged(onAuthStateChanged);
+        return sub;
     }, []);
 
     return (
-        <LoginContext.Provider value={{ user, isLoading }}>
+        <>
             {props.children}
-        </LoginContext.Provider>
+        </>
     );
 }

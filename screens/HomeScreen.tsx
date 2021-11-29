@@ -1,14 +1,19 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { View, Text, Button, StyleSheet, Alert, TextInput, Pressable } from 'react-native'
 
 import FirebaseUtil from '../utils/FirebaseUtil';
-import LoginProvider, { LoginContext } from '../utils/LoginProvider';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 
+import SingleStateProvider from '../utils/SingleStateProvider';
+
 export default function HomeScreen() {
-    const { user } = useContext(LoginContext);
+    const StateProvider = SingleStateProvider.getInstance();
+
+    const [user, setUser] = useState<any>();
+
+    var subscribed: any = null;
 
     enum usedViews {
         Home,
@@ -23,6 +28,17 @@ export default function HomeScreen() {
             Alert.alert("Something went wrong!");
         });
     }
+
+    useEffect(() => {
+        subscribed = StateProvider.userSubject.subscribe((x: any) => setUser(x));
+        setUser(StateProvider.getValueForKey('user'));
+        return () => { 
+            if (subscribed !== null)
+            {
+                subscribed.unsubscribe();
+            }
+         }
+    }, []);
 
     return (
         <View style={styles.container}>

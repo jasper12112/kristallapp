@@ -2,17 +2,24 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text, TextInput, Alert, Button, Pressable } from 'react-native'
 import FirebaseUtil from '../utils/FirebaseUtil';
 
+import ImagePicker from 'react-native-image-picker';
+
 import firestore from '@react-native-firebase/firestore';
+
+import SingleStateProvider from '../utils/SingleStateProvider';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
+    const StateProvider = SingleStateProvider.getInstance();
+
     //Sign in or signup
     const [create, setCreate] = useState(false);
 
     async function signIn(): Promise<void> {
+        console.log('sign in time!');
         const result = await FirebaseUtil.signIn(email, password).catch((e) => {
             console.log(e);
             Alert.alert("Email/Password is wrong!");
@@ -20,18 +27,25 @@ export default function LoginScreen() {
     }
 
     async function signUp(): Promise<void> {
+
         if (password.length < 6) {
             Alert.alert("Password must have a minimum of 6 characters.");
+            return;
         }
 
         if (username.length < 3) {
             Alert.alert("Minimum username length of 3 characters.");
+            return;
         }
 
+        StateProvider.storeKeyValue('isLoading', true);
+        
         const result = await FirebaseUtil.signUp(email, password).catch((e) => {
             console.log(e);
             Alert.alert("Something went wrong!");
+            return;
         });
+        
         if (result) {
             const user = result.user;
             const usersCollection = firestore().collection('users');
@@ -44,6 +58,8 @@ export default function LoginScreen() {
                 'chat-acces': false,
             });
         }
+
+        StateProvider.storeKeyValue('isLoading', false);
     }
 
     return <View style={styles.container}>
